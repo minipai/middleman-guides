@@ -5,7 +5,7 @@ title: Layouts &amp; Partials
 
 # Layouts
 
-Layouts allow the common HTML surrounding individual pages to be shared across all your templates. The most basic layout has some shared content and a `yield` call where templates will place their contents. 
+Layouts allow the common HTML surrounding individual pages to be shared across all your templates. The most basic layout has some shared content and a `yield` call where templates will place their contents. Furthermore, With `wrap_layout`, `content_for` and `partial` you can build a complex layout inheritance, reduce the duplication of you code in templates to a minimal amount.
 
 ## Basic layout 
 
@@ -37,22 +37,10 @@ The combined final output in HTML will be:
 
 Regarding file extensions and parsers, layouts have a different function from templates in the building process, so care should be taken in giving them the right extension. Unlike templates, layouts should not be rendered to html. Giving a layout file the leftmost extension `.html` will cause an error when building. Therefore, you should stick to the template language extension only, i.e.: `layout.erb`.
 
-## Nested Layouts
-
-Sometimes, one layer of layout is not enough. Normally, the contents of the layout will wrap the contents of the template. With nested layouts, I can add the following to the layout and wrap the contents yet again:
-
-    <% wrap_layout :admin do %>
-      I am the Defaul Layout
-      <%= yield %>
-    <% end %>
-
-Now, the final contents will be the template, wrapped in the default layout, wrapped in the admin layout. This can 
-continue indefinitely.
 
 ## Content Block
 
-
-The `content_for` functionality supports capturing content and then rendering this into a different place within a layout. One such example is including assets onto the layout from a template:
+The `content_for` functionality supports capturing content and then rendering this into a different block within a layout. One such example is including assets onto the layout from a template:
 
     <% content_for :assets do %>
       <%= stylesheet_link_tag 'index', 'custom' %>
@@ -68,10 +56,13 @@ Added to a template, this will capture the includes from the block and allow the
     
 This will automatically insert the contents of the block (in this case a stylesheet include) into the location the content is yielded within the layout.
 
-You can also check if a `content_for` block exists for a given key using `content_for?`:
+You can also check if a `content_for` block exists for a given key using `content_for?`, usefull to provide a default content:
 
-    <% if content_for?(:assets) %>  
-      <div><%= yield_content :assets %></div>
+    <% if content_for?(:assets) %>
+      <%= stylesheet_link_tag 'advance' %>
+      <%= yield_content :assets %>
+    <% else %>
+      <%= stylesheet_link_tag 'base' %>
     <% end %>
   
 Also supports arguments yielded to the content block
@@ -79,6 +70,18 @@ Also supports arguments yielded to the content block
     yield_content :head, param1, param2
     content_for(:head) { |param1, param2| ...content... }
 
+
+## Nested Layouts
+
+Sometimes, one layer of layout is not enough. Normally, the contents of the layout will wrap the contents of the template. With `wrap_layout`, You can add the following to the layout and wrap the contents yet again:
+
+    <% wrap_layout :admin do %>
+      I am the Defaul Layout
+      <%= yield %>
+    <% end %>
+
+Now, the final contents will be the template, wrapped in the default layout, wrapped in the admin layout. This can 
+continue indefinitely.
 
 
 ## Partials
@@ -143,7 +146,7 @@ Read the [Padrino partial helper] documentation for more information.
 
 
 
-### Custom Layouts
+## Multiple Layouts
 
 By default, Middleman will use the same layout file for every page in your site. However, you may want to use multiple layouts and specify which pages use these other layouts. For example, you may have a "public" site and an "admin" site which would each have their own layout files.
 
@@ -193,7 +196,7 @@ Which would make the login page use the admin layout. As an alternative to speci
     </form>
 
 
-### Disabling Layouts Entirely
+## Disabling Layouts Entirely
 
 In some cases, you may not want to use a layout at all. This can be accomplished by setting the default layout to false in your `config.rb`:
 
